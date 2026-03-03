@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://free3d-hub.com/sitemap.xml
