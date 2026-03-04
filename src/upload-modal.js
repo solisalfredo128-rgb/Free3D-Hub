@@ -83,7 +83,7 @@ export function renderUploadModal() {
               <div class="upload-modal__preview-placeholder" id="previewPlaceholder">
                 <div class="upload-modal__preview-placeholder-icon">🎮</div>
                 <div class="upload-modal__preview-placeholder-text">上传模型后预览</div>
-                <div class="upload-modal__preview-placeholder-hint">支持 GLB/GLTF 实时 PBR 渲染</div>
+                <div class="upload-modal__preview-placeholder-hint">支持 GLB/GLTF/FBX/OBJ 实时 PBR 渲染</div>
               </div>
             </div>
             
