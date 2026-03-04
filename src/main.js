@@ -25,7 +25,7 @@ console.log('欢迎使用 Free3D Hub - 为AI时代开发者打造的无门槛3D�
 // ============================================
 const state = {
   activeCategory: 'all',
-  activeSort: 'popular',
+  activeSort: 'newest',
   activeFormats: [],
   searchQuery: '',
   previewScenes: [],
@@ -417,8 +417,57 @@ function renderModelGrid() {
         const modelId = container.id.replace('preview-', '');
         const modelData = getAllCombinedModels().find(m => m.id === modelId);
         if (modelData && !container.querySelector('canvas')) {
-          const scene = createPreviewScene(container, modelData);
-          state.previewScenes.push(scene);
+          if (modelData.isUploaded) {
+            // Render actual model for uploaded items
+            getModelFiles(modelData.id).then(files => {
+              let modelUrl = null;
+              const textureUrls = {};
+              const urlsToRevoke = [];
+
+              if (files.modelFile && files.modelFile.blob) {
+                modelUrl = createFileURL(files.modelFile);
+                if (modelUrl) urlsToRevoke.push(modelUrl);
+              }
+
+              const textureTypes = ['albedo', 'normal', 'metallic', 'roughness', 'ao', 'emissive', 'height'];
+              textureTypes.forEach(type => {
+                if (files[type] && files[type].blob) {
+                  const url = createFileURL(files[type]);
+                  if (url) {
+                    textureUrls[type] = url;
+                    urlsToRevoke.push(url);
+                  }
+                }
+              });
+
+              // Apply Sketchfab-style dark theme to the preview container
+              container.style.background = 'radial-gradient(circle at center, #2d3436 0%, #000000 100%)';
+
+              const viewer = createPBRViewer(container, {
+                modelUrl,
+                modelFormat: modelData.format || null,
+                textures: textureUrls,
+                modelData,
+                autoRotate: true,
+                showGrid: false, // cleaner look for grid
+              });
+
+              state.previewScenes.push({
+                dispose: () => {
+                  viewer.dispose();
+                  urlsToRevoke.forEach(url => URL.revokeObjectURL(url));
+                }
+              });
+            }).catch(err => {
+              console.warn('Failed to load real model for grid preview, falling back:', err);
+              const scene = createPreviewScene(container, modelData);
+              state.previewScenes.push(scene);
+            });
+          } else {
+            // Procedural placeholders for built-in models
+            const scene = createPreviewScene(container, modelData);
+            state.previewScenes.push(scene);
+          }
         }
         observer.unobserve(container);
       }
