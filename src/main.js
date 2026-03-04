@@ -442,8 +442,10 @@ function renderModelGrid() {
                 }
               });
 
-              // Apply Sketchfab-style dark theme to the preview container
+              // Apply Sketchfab-style dark theme and hide overlay
               container.style.background = 'radial-gradient(circle at center, #2d3436 0%, #000000 100%)';
+              const overlay = container.querySelector('.model-card__preview-overlay');
+              if (overlay) overlay.style.display = 'none';
 
               const viewer = createPBRViewer(container, {
                 modelUrl,
@@ -451,7 +453,8 @@ function renderModelGrid() {
                 textures: textureUrls,
                 modelData,
                 autoRotate: true,
-                showGrid: false, // cleaner look for grid
+                showGrid: false,
+                isThumbnail: true,
               });
 
               state.previewScenes.push({
@@ -461,9 +464,15 @@ function renderModelGrid() {
                 }
               });
             }).catch(err => {
-              console.warn('Failed to load real model for grid preview, falling back:', err);
-              const scene = createPreviewScene(container, modelData);
-              state.previewScenes.push(scene);
+              console.warn('Failed to load real model for grid preview:', err);
+              // Don't show capsule fallback for uploaded models if PBR fails, 
+              // instead show a simple info placeholder or try traditional loader
+              container.style.background = 'var(--bg-card)';
+              container.innerHTML += `
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:var(--text-muted); font-size:0.8rem; text-align:center;">
+                  <span>⚠️</span><br/>Load Failed
+                </div>
+              `;
             });
           } else {
             // Procedural placeholders for built-in models
@@ -634,12 +643,16 @@ async function openModal(modelId) {
 
         const viewer = createPBRViewer(preview, {
           modelUrl,
-          modelFormat: model.format || null,  // pass format hint for blob URLs
+          modelFormat: model.format || null,
           textures: textureUrls,
           modelData: model,
           autoRotate: true,
           showGrid: true,
         });
+
+        // Hide overlay in modal too
+        const modalOverlay = preview.querySelector('.model-card__preview-overlay');
+        if (modalOverlay) modalOverlay.style.display = 'none';
 
         state.detailScene = {
           dispose: () => {

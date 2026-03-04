@@ -144,6 +144,7 @@ export function createPBRViewer(container, options = {}) {
         modelData = {},
         autoRotate = true,
         showGrid = true,
+        isThumbnail = false,
     } = options;
 
     const width = container.clientWidth;
@@ -556,16 +557,19 @@ export function createPBRViewer(container, options = {}) {
     }
 
     // ---- Loading Progress UI ----
-    const progressBarContainer = document.createElement('div');
-    progressBarContainer.className = 'pbr-loading';
-    progressBarContainer.innerHTML = `
-    <div class="pbr-loading__spinner"></div>
-    <div class="pbr-loading__text">Loading Model...</div>
-    <div class="pbr-loading__bar">
-      <div class="pbr-loading__fill" id="pbrLoadFill" style="width: 0%"></div>
-    </div>
-  `;
-    container.appendChild(progressBarContainer);
+    let progressBarContainer = null;
+    if (!isThumbnail) {
+        progressBarContainer = document.createElement('div');
+        progressBarContainer.className = 'pbr-loading';
+        progressBarContainer.innerHTML = `
+        <div class="pbr-loading__spinner"></div>
+        <div class="pbr-loading__text">Loading Model...</div>
+        <div class="pbr-loading__bar">
+          <div class="pbr-loading__fill" id="pbrLoadFill" style="width: 0%"></div>
+        </div>
+      `;
+        container.appendChild(progressBarContainer);
+    }
 
     function updateLoadingProgress(percent) {
         const fill = container.querySelector('#pbrLoadFill');
@@ -573,9 +577,10 @@ export function createPBRViewer(container, options = {}) {
     }
 
     function hideLoadingProgress() {
+        if (!progressBarContainer) return;
         progressBarContainer.style.opacity = '0';
         setTimeout(() => {
-            if (progressBarContainer.parentNode) {
+            if (progressBarContainer && progressBarContainer.parentNode) {
                 progressBarContainer.parentNode.removeChild(progressBarContainer);
             }
         }, 400);
@@ -601,7 +606,9 @@ export function createPBRViewer(container, options = {}) {
     <button class="pbr-toolbar__btn" data-action="envStudio" title="Studio Lighting">S</button>
     <button class="pbr-toolbar__btn" data-action="envDark" title="Dark Lighting">D</button>
   `;
-    container.appendChild(toolbar);
+    if (!isThumbnail) {
+        container.appendChild(toolbar);
+    }
 
     // Toolbar event handling
     let isWireframe = false;
@@ -729,7 +736,15 @@ export function createPBRViewer(container, options = {}) {
             }
         } catch (err) {
             console.error('Failed to load model:', err);
-            createFallbackObject(modelData);
+            if (!isThumbnail) {
+                createFallbackObject(modelData);
+            } else {
+                // Show a simple error text in the middle of canvas
+                const errorNode = document.createElement('div');
+                errorNode.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:rgba(255,255,255,0.3); font-size:10px; font-family:sans-serif; pointer-events:none;';
+                errorNode.innerHTML = '⚠️ LOAD ERROR';
+                container.appendChild(errorNode);
+            }
         } finally {
             hideLoadingProgress();
         }
