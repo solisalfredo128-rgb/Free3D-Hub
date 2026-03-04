@@ -15,49 +15,50 @@ import { CATEGORIES, GEOMETRY_TYPES } from './models-data.js';
 
 // PBR texture channel definitions
 const PBR_CHANNELS = [
-    { id: 'albedo', label: 'Base Color', desc: '基础颜色/漫反射贴图', icon: '🎨', accept: 'image/*' },
-    { id: 'normal', label: 'Normal', desc: '法线贴图 (切线空间)', icon: '🔵', accept: 'image/*' },
-    { id: 'metallic', label: 'Metallic', desc: '金属度贴图', icon: '⚙️', accept: 'image/*' },
-    { id: 'roughness', label: 'Roughness', desc: '粗糙度贴图', icon: '🪨', accept: 'image/*' },
-    { id: 'ao', label: 'AO', desc: '环境光遮蔽贴图', icon: '🌑', accept: 'image/*' },
-    { id: 'emissive', label: 'Emissive', desc: '自发光贴图', icon: '✨', accept: 'image/*' },
-    { id: 'height', label: 'Height', desc: '高度/置换贴图', icon: '📐', accept: 'image/*' },
+  { id: 'albedo', label: 'Base Color', desc: '基础颜色/漫反射贴图', icon: '🎨', accept: 'image/*' },
+  { id: 'normal', label: 'Normal', desc: '法线贴图 (切线空间)', icon: '🔵', accept: 'image/*' },
+  { id: 'metallic', label: 'Metallic', desc: '金属度贴图', icon: '⚙️', accept: 'image/*' },
+  { id: 'roughness', label: 'Roughness', desc: '粗糙度贴图', icon: '🪨', accept: 'image/*' },
+  { id: 'ao', label: 'AO', desc: '环境光遮蔽贴图', icon: '🌑', accept: 'image/*' },
+  { id: 'emissive', label: 'Emissive', desc: '自发光贴图', icon: '✨', accept: 'image/*' },
+  { id: 'height', label: 'Height', desc: '高度/置换贴图', icon: '📐', accept: 'image/*' },
 ];
 
 // Supported 3D file formats
 const MODEL_FORMATS = {
-    'glb': { label: 'GLB', mime: 'model/gltf-binary', canPreview: true },
-    'gltf': { label: 'GLTF', mime: 'model/gltf+json', canPreview: true },
-    'fbx': { label: 'FBX', mime: 'application/octet-stream', canPreview: false },
-    'obj': { label: 'OBJ', mime: 'application/octet-stream', canPreview: false },
-    'blend': { label: 'BLEND', mime: 'application/octet-stream', canPreview: false },
+  'glb': { label: 'GLB', mime: 'model/gltf-binary', canPreview: true, format: 'gltf' },
+  'gltf': { label: 'GLTF', mime: 'model/gltf+json', canPreview: true, format: 'gltf' },
+  'fbx': { label: 'FBX', mime: 'application/octet-stream', canPreview: true, format: 'fbx' },
+  'obj': { label: 'OBJ', mime: 'application/octet-stream', canPreview: true, format: 'obj' },
+  'blend': { label: 'BLEND', mime: 'application/octet-stream', canPreview: false },
 };
 
 /**
  * Upload modal state
  */
 let uploadState = {
-    modelFile: null,
-    modelFileUrl: null,
-    textureFiles: {},
-    textureUrls: {},
-    thumbnailFile: null,
-    thumbnailUrl: null,
-    previewViewer: null,
-    // Form data
-    name: '',
-    author: '',
-    category: 'props',
-    license: 'CC0',
-    description: '',
-    tags: '',
+  modelFile: null,
+  modelFileUrl: null,
+  modelFormat: null,   // 'gltf', 'fbx', 'obj' etc.
+  textureFiles: {},
+  textureUrls: {},
+  thumbnailFile: null,
+  thumbnailUrl: null,
+  previewViewer: null,
+  // Form data
+  name: '',
+  author: '',
+  category: 'props',
+  license: 'CC0',
+  description: '',
+  tags: '',
 };
 
 /**
  * Render the upload modal HTML
  */
 export function renderUploadModal() {
-    return `
+  return `
     <div class="upload-overlay" id="uploadOverlay">
       <div class="upload-modal" id="uploadModal">
         
@@ -159,8 +160,8 @@ export function renderUploadModal() {
                   <label class="upload-form__label" for="uploadCategory">分类</label>
                   <select class="upload-form__select" id="uploadCategory">
                     ${CATEGORIES.filter(c => c.id !== 'all').map(c =>
-        `<option value="${c.id}">${c.icon} ${c.name}</option>`
-    ).join('')}
+    `<option value="${c.id}">${c.icon} ${c.name}</option>`
+  ).join('')}
                   </select>
                 </div>
               </div>
@@ -218,211 +219,211 @@ export function renderUploadModal() {
  * Initialize upload modal event listeners
  */
 export function initUploadModal(onModelUploaded, showToast) {
-    const overlay = document.getElementById('uploadOverlay');
-    const closeBtn = document.getElementById('uploadClose');
-    const cancelBtn = document.getElementById('uploadCancel');
-    const submitBtn = document.getElementById('uploadSubmit');
-    const dropzone = document.getElementById('modelDropzone');
-    const fileInput = document.getElementById('modelFileInput');
-    const fileRemove = document.getElementById('fileRemove');
+  const overlay = document.getElementById('uploadOverlay');
+  const closeBtn = document.getElementById('uploadClose');
+  const cancelBtn = document.getElementById('uploadCancel');
+  const submitBtn = document.getElementById('uploadSubmit');
+  const dropzone = document.getElementById('modelDropzone');
+  const fileInput = document.getElementById('modelFileInput');
+  const fileRemove = document.getElementById('fileRemove');
 
-    // Reset state
+  // Reset state
+  resetUploadState();
+
+  // ---- Open/Close ----
+  function openUploadModal() {
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeUploadModal() {
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+    disposePreview();
     resetUploadState();
+  }
 
-    // ---- Open/Close ----
-    function openUploadModal() {
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
+  closeBtn.addEventListener('click', closeUploadModal);
+  cancelBtn.addEventListener('click', closeUploadModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeUploadModal();
+  });
+
+  // Escape key
+  const onKeyDown = (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('active')) {
+      closeUploadModal();
     }
+  };
+  document.addEventListener('keydown', onKeyDown);
 
-    function closeUploadModal() {
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-        disposePreview();
-        resetUploadState();
+  // ---- Drag & Drop ----
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+  });
+
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('dragover');
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleModelFileSelect(files[0]);
     }
+  });
 
-    closeBtn.addEventListener('click', closeUploadModal);
-    cancelBtn.addEventListener('click', closeUploadModal);
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) closeUploadModal();
+  // ---- File Input ----
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleModelFileSelect(e.target.files[0]);
+    }
+  });
+
+  // ---- File Remove ----
+  fileRemove.addEventListener('click', () => {
+    uploadState.modelFile = null;
+    if (uploadState.modelFileUrl) {
+      URL.revokeObjectURL(uploadState.modelFileUrl);
+      uploadState.modelFileUrl = null;
+    }
+    document.getElementById('dropzoneContent').style.display = '';
+    document.getElementById('dropzoneFile').style.display = 'none';
+    disposePreview();
+    updatePreviewPlaceholder(true);
+    validateForm();
+  });
+
+  // ---- PBR Texture Inputs ----
+  PBR_CHANNELS.forEach(ch => {
+    const slot = document.getElementById(`pbrSlot-${ch.id}`);
+    const input = document.getElementById(`pbrInput-${ch.id}`);
+    const removeBtn = document.getElementById(`pbrRemove-${ch.id}`);
+
+    // Click to upload
+    slot.addEventListener('click', (e) => {
+      if (e.target.closest('.pbr-slot__remove')) return;
+      input.click();
     });
 
-    // Escape key
-    const onKeyDown = (e) => {
-        if (e.key === 'Escape' && overlay.classList.contains('active')) {
-            closeUploadModal();
+    // File selected
+    input.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleTextureSelect(ch.id, e.target.files[0]);
+      }
+    });
+
+    // Remove texture
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeTexture(ch.id);
+    });
+
+    // Drag & Drop on individual slot
+    slot.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      slot.classList.add('dragover');
+    });
+    slot.addEventListener('dragleave', () => {
+      slot.classList.remove('dragover');
+    });
+    slot.addEventListener('drop', (e) => {
+      e.preventDefault();
+      slot.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) {
+        handleTextureSelect(ch.id, e.dataTransfer.files[0]);
+      }
+    });
+  });
+
+  // ---- Form Validation ----
+  ['uploadName', 'uploadAuthor'].forEach(id => {
+    document.getElementById(id).addEventListener('input', validateForm);
+  });
+
+  // ---- Submit ----
+  submitBtn.addEventListener('click', async () => {
+    if (!validateForm()) return;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="upload-spinner"></span> 保存中...';
+
+    try {
+      const modelId = generateModelId();
+
+      // Read files into blobs
+      const files = {};
+
+      if (uploadState.modelFile) {
+        files.modelFile = await readFileAsBlob(uploadState.modelFile);
+      }
+
+      for (const [channel, file] of Object.entries(uploadState.textureFiles)) {
+        if (file) {
+          files[channel] = await readFileAsBlob(file);
         }
-    };
-    document.addEventListener('keydown', onKeyDown);
+      }
 
-    // ---- Drag & Drop ----
-    dropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropzone.classList.add('dragover');
-    });
+      // Determine format
+      const ext = uploadState.modelFile
+        ? uploadState.modelFile.name.split('.').pop().toLowerCase()
+        : 'glb';
 
-    dropzone.addEventListener('dragleave', () => {
-        dropzone.classList.remove('dragover');
-    });
+      // Build model data
+      const now = new Date();
+      const modelData = {
+        id: modelId,
+        name: document.getElementById('uploadName').value.trim(),
+        author: document.getElementById('uploadAuthor').value.trim(),
+        authorInitial: document.getElementById('uploadAuthor').value.trim().charAt(0).toUpperCase(),
+        category: document.getElementById('uploadCategory').value,
+        format: ext,
+        license: document.getElementById('uploadLicense').value,
+        fileSize: uploadState.modelFile
+          ? formatFileSize(uploadState.modelFile.size)
+          : '0 KB',
+        vertices: document.getElementById('uploadVerts').value || '-',
+        polygons: document.getElementById('uploadPolys').value || '-',
+        textures: buildTextureLabel(),
+        description: document.getElementById('uploadDesc').value.trim() || '社区上传的3D模型',
+        tags: document.getElementById('uploadTags').value
+          .split(/[,，]/)
+          .map(t => t.trim())
+          .filter(t => t.length > 0),
+        downloads: 0,
+        likes: 0,
+        views: 0,
+        date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`,
+        // Preview metadata
+        geometryType: GEOMETRY_TYPES[Math.floor(Math.random() * GEOMETRY_TYPES.length)],
+        color: '#6c5ce7',
+        secondaryColor: '#00cec9',
+        // Source flag
+        isUploaded: true,
+        hasPBR: Object.keys(uploadState.textureFiles).length > 0,
+        hasModel: !!uploadState.modelFile,
+      };
 
-    dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleModelFileSelect(files[0]);
-        }
-    });
+      await saveModel(modelData, files);
 
-    // ---- File Input ----
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            handleModelFileSelect(e.target.files[0]);
-        }
-    });
+      showToast(`✅ 模型 "${modelData.name}" 发布成功！`);
+      closeUploadModal();
 
-    // ---- File Remove ----
-    fileRemove.addEventListener('click', () => {
-        uploadState.modelFile = null;
-        if (uploadState.modelFileUrl) {
-            URL.revokeObjectURL(uploadState.modelFileUrl);
-            uploadState.modelFileUrl = null;
-        }
-        document.getElementById('dropzoneContent').style.display = '';
-        document.getElementById('dropzoneFile').style.display = 'none';
-        disposePreview();
-        updatePreviewPlaceholder(true);
-        validateForm();
-    });
+      if (onModelUploaded) {
+        onModelUploaded(modelData);
+      }
+    } catch (err) {
+      console.error('Upload failed:', err);
+      showToast('❌ 上传失败: ' + err.message);
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>🚀</span> 发布模型';
+    }
+  });
 
-    // ---- PBR Texture Inputs ----
-    PBR_CHANNELS.forEach(ch => {
-        const slot = document.getElementById(`pbrSlot-${ch.id}`);
-        const input = document.getElementById(`pbrInput-${ch.id}`);
-        const removeBtn = document.getElementById(`pbrRemove-${ch.id}`);
-
-        // Click to upload
-        slot.addEventListener('click', (e) => {
-            if (e.target.closest('.pbr-slot__remove')) return;
-            input.click();
-        });
-
-        // File selected
-        input.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleTextureSelect(ch.id, e.target.files[0]);
-            }
-        });
-
-        // Remove texture
-        removeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeTexture(ch.id);
-        });
-
-        // Drag & Drop on individual slot
-        slot.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            slot.classList.add('dragover');
-        });
-        slot.addEventListener('dragleave', () => {
-            slot.classList.remove('dragover');
-        });
-        slot.addEventListener('drop', (e) => {
-            e.preventDefault();
-            slot.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) {
-                handleTextureSelect(ch.id, e.dataTransfer.files[0]);
-            }
-        });
-    });
-
-    // ---- Form Validation ----
-    ['uploadName', 'uploadAuthor'].forEach(id => {
-        document.getElementById(id).addEventListener('input', validateForm);
-    });
-
-    // ---- Submit ----
-    submitBtn.addEventListener('click', async () => {
-        if (!validateForm()) return;
-
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="upload-spinner"></span> 保存中...';
-
-        try {
-            const modelId = generateModelId();
-
-            // Read files into blobs
-            const files = {};
-
-            if (uploadState.modelFile) {
-                files.modelFile = await readFileAsBlob(uploadState.modelFile);
-            }
-
-            for (const [channel, file] of Object.entries(uploadState.textureFiles)) {
-                if (file) {
-                    files[channel] = await readFileAsBlob(file);
-                }
-            }
-
-            // Determine format
-            const ext = uploadState.modelFile
-                ? uploadState.modelFile.name.split('.').pop().toLowerCase()
-                : 'glb';
-
-            // Build model data
-            const now = new Date();
-            const modelData = {
-                id: modelId,
-                name: document.getElementById('uploadName').value.trim(),
-                author: document.getElementById('uploadAuthor').value.trim(),
-                authorInitial: document.getElementById('uploadAuthor').value.trim().charAt(0).toUpperCase(),
-                category: document.getElementById('uploadCategory').value,
-                format: ext,
-                license: document.getElementById('uploadLicense').value,
-                fileSize: uploadState.modelFile
-                    ? formatFileSize(uploadState.modelFile.size)
-                    : '0 KB',
-                vertices: document.getElementById('uploadVerts').value || '-',
-                polygons: document.getElementById('uploadPolys').value || '-',
-                textures: buildTextureLabel(),
-                description: document.getElementById('uploadDesc').value.trim() || '社区上传的3D模型',
-                tags: document.getElementById('uploadTags').value
-                    .split(/[,，]/)
-                    .map(t => t.trim())
-                    .filter(t => t.length > 0),
-                downloads: 0,
-                likes: 0,
-                views: 0,
-                date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`,
-                // Preview metadata
-                geometryType: GEOMETRY_TYPES[Math.floor(Math.random() * GEOMETRY_TYPES.length)],
-                color: '#6c5ce7',
-                secondaryColor: '#00cec9',
-                // Source flag
-                isUploaded: true,
-                hasPBR: Object.keys(uploadState.textureFiles).length > 0,
-                hasModel: !!uploadState.modelFile,
-            };
-
-            await saveModel(modelData, files);
-
-            showToast(`✅ 模型 "${modelData.name}" 发布成功！`);
-            closeUploadModal();
-
-            if (onModelUploaded) {
-                onModelUploaded(modelData);
-            }
-        } catch (err) {
-            console.error('Upload failed:', err);
-            showToast('❌ 上传失败: ' + err.message);
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span>🚀</span> 发布模型';
-        }
-    });
-
-    return { openUploadModal, closeUploadModal };
+  return { openUploadModal, closeUploadModal };
 }
 
 // ============================================
@@ -430,201 +431,207 @@ export function initUploadModal(onModelUploaded, showToast) {
 // ============================================
 
 function resetUploadState() {
-    // Revoke old URLs
-    if (uploadState.modelFileUrl) URL.revokeObjectURL(uploadState.modelFileUrl);
-    Object.values(uploadState.textureUrls).forEach(url => {
-        if (url) URL.revokeObjectURL(url);
-    });
+  // Revoke old URLs
+  if (uploadState.modelFileUrl) URL.revokeObjectURL(uploadState.modelFileUrl);
+  Object.values(uploadState.textureUrls).forEach(url => {
+    if (url) URL.revokeObjectURL(url);
+  });
 
-    uploadState = {
-        modelFile: null,
-        modelFileUrl: null,
-        textureFiles: {},
-        textureUrls: {},
-        thumbnailFile: null,
-        thumbnailUrl: null,
-        previewViewer: null,
-        name: '',
-        author: '',
-        category: 'props',
-        license: 'CC0',
-        description: '',
-        tags: '',
-    };
+  uploadState = {
+    modelFile: null,
+    modelFileUrl: null,
+    modelFormat: null,
+    textureFiles: {},
+    textureUrls: {},
+    thumbnailFile: null,
+    thumbnailUrl: null,
+    previewViewer: null,
+    name: '',
+    author: '',
+    category: 'props',
+    license: 'CC0',
+    description: '',
+    tags: '',
+  };
 }
 
 function handleModelFileSelect(file) {
-    const ext = file.name.split('.').pop().toLowerCase();
-    const formatInfo = MODEL_FORMATS[ext];
+  const ext = file.name.split('.').pop().toLowerCase();
+  const formatInfo = MODEL_FORMATS[ext];
 
-    if (!formatInfo) {
-        alert('不支持的文件格式。请使用 GLB, GLTF, FBX, OBJ, 或 BLEND 文件。');
-        return;
-    }
+  if (!formatInfo) {
+    alert('不支持的文件格式。请使用 GLB, GLTF, FBX, OBJ, 或 BLEND 文件。');
+    return;
+  }
 
-    uploadState.modelFile = file;
+  uploadState.modelFile = file;
 
-    // Update UI
-    document.getElementById('dropzoneContent').style.display = 'none';
-    document.getElementById('dropzoneFile').style.display = '';
-    document.getElementById('fileName').textContent = file.name;
-    document.getElementById('fileSize').textContent = formatFileSize(file.size);
+  // Store format hint for the viewer
+  uploadState.modelFormat = formatInfo.format || ext;
 
-    // Auto-fill name if empty
-    const nameInput = document.getElementById('uploadName');
-    if (!nameInput.value.trim()) {
-        const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
-        nameInput.value = baseName.charAt(0).toUpperCase() + baseName.slice(1);
-    }
+  // Update UI
+  document.getElementById('dropzoneContent').style.display = 'none';
+  document.getElementById('dropzoneFile').style.display = '';
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = formatFileSize(file.size);
 
-    // Create preview for GLB/GLTF
-    if (formatInfo.canPreview) {
-        uploadState.modelFileUrl = URL.createObjectURL(file);
-        updatePreview();
-    } else {
-        updatePreviewPlaceholder(false, `${formatInfo.label} 格式暂不支持在线预览`);
-    }
+  // Auto-fill name if empty
+  const nameInput = document.getElementById('uploadName');
+  if (!nameInput.value.trim()) {
+    const baseName = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+    nameInput.value = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+  }
 
-    validateForm();
+  // Create preview for all previewable formats
+  if (formatInfo.canPreview) {
+    uploadState.modelFileUrl = URL.createObjectURL(file);
+    updatePreview();
+  } else {
+    updatePreviewPlaceholder(false, `${formatInfo.label} 格式暂不支持在线预览`);
+  }
+
+  validateForm();
 }
 
 function handleTextureSelect(channel, file) {
-    if (!file.type.startsWith('image/')) {
-        alert('请选择图片文件作为贴图');
-        return;
-    }
+  if (!file.type.startsWith('image/')) {
+    alert('请选择图片文件作为贴图');
+    return;
+  }
 
-    uploadState.textureFiles[channel] = file;
+  uploadState.textureFiles[channel] = file;
 
-    // Create preview URL
-    if (uploadState.textureUrls[channel]) {
-        URL.revokeObjectURL(uploadState.textureUrls[channel]);
-    }
-    uploadState.textureUrls[channel] = URL.createObjectURL(file);
+  // Create preview URL
+  if (uploadState.textureUrls[channel]) {
+    URL.revokeObjectURL(uploadState.textureUrls[channel]);
+  }
+  uploadState.textureUrls[channel] = URL.createObjectURL(file);
 
-    // Update slot UI
-    const preview = document.getElementById(`pbrPreview-${channel}`);
-    preview.style.backgroundImage = `url(${uploadState.textureUrls[channel]})`;
-    preview.style.backgroundSize = 'cover';
-    preview.style.backgroundPosition = 'center';
-    preview.querySelector('.pbr-slot__icon').style.display = 'none';
+  // Update slot UI
+  const preview = document.getElementById(`pbrPreview-${channel}`);
+  preview.style.backgroundImage = `url(${uploadState.textureUrls[channel]})`;
+  preview.style.backgroundSize = 'cover';
+  preview.style.backgroundPosition = 'center';
+  preview.querySelector('.pbr-slot__icon').style.display = 'none';
 
-    const slot = document.getElementById(`pbrSlot-${channel}`);
-    slot.classList.add('has-texture');
+  const slot = document.getElementById(`pbrSlot-${channel}`);
+  slot.classList.add('has-texture');
 
-    const removeBtn = document.getElementById(`pbrRemove-${channel}`);
-    removeBtn.style.display = '';
+  const removeBtn = document.getElementById(`pbrRemove-${channel}`);
+  removeBtn.style.display = '';
 
-    // Update 3D preview with new texture
-    updatePreviewTextures();
+  // Update 3D preview with new texture
+  updatePreviewTextures();
 }
 
 function removeTexture(channel) {
-    if (uploadState.textureUrls[channel]) {
-        URL.revokeObjectURL(uploadState.textureUrls[channel]);
-    }
-    delete uploadState.textureFiles[channel];
-    delete uploadState.textureUrls[channel];
+  if (uploadState.textureUrls[channel]) {
+    URL.revokeObjectURL(uploadState.textureUrls[channel]);
+  }
+  delete uploadState.textureFiles[channel];
+  delete uploadState.textureUrls[channel];
 
-    // Reset slot UI
-    const preview = document.getElementById(`pbrPreview-${channel}`);
-    preview.style.backgroundImage = '';
-    preview.querySelector('.pbr-slot__icon').style.display = '';
+  // Reset slot UI
+  const preview = document.getElementById(`pbrPreview-${channel}`);
+  preview.style.backgroundImage = '';
+  preview.querySelector('.pbr-slot__icon').style.display = '';
 
-    const slot = document.getElementById(`pbrSlot-${channel}`);
-    slot.classList.remove('has-texture');
+  const slot = document.getElementById(`pbrSlot-${channel}`);
+  slot.classList.remove('has-texture');
 
-    const removeBtn = document.getElementById(`pbrRemove-${channel}`);
-    removeBtn.style.display = 'none';
+  const removeBtn = document.getElementById(`pbrRemove-${channel}`);
+  removeBtn.style.display = 'none';
 
-    const input = document.getElementById(`pbrInput-${channel}`);
-    input.value = '';
+  const input = document.getElementById(`pbrInput-${channel}`);
+  input.value = '';
 
-    // Update 3D preview
-    updatePreviewTextures();
+  // Update 3D preview
+  updatePreviewTextures();
 }
 
 function updatePreview() {
-    disposePreview();
-    updatePreviewPlaceholder(false);
+  disposePreview();
+  updatePreviewPlaceholder(false);
 
-    const container = document.getElementById('uploadPreviewContainer');
+  const container = document.getElementById('uploadPreviewContainer');
 
-    uploadState.previewViewer = createPBRViewer(container, {
-        modelUrl: uploadState.modelFileUrl,
-        textures: uploadState.textureUrls,
-        modelData: { geometryType: 'sphere', color: '#6c5ce7', secondaryColor: '#00cec9' },
-        autoRotate: true,
-        showGrid: true,
-    });
+  uploadState.previewViewer = createPBRViewer(container, {
+    modelUrl: uploadState.modelFileUrl,
+    modelFormat: uploadState.modelFormat,  // pass format hint for blob URLs
+    textures: uploadState.textureUrls,
+    modelData: { geometryType: 'sphere', color: '#6c5ce7', secondaryColor: '#00cec9' },
+    autoRotate: true,
+    showGrid: true,
+  });
 }
 
 function updatePreviewTextures() {
-    if (uploadState.previewViewer) {
-        uploadState.previewViewer.applyTextures(uploadState.textureUrls);
-    } else if (Object.keys(uploadState.textureUrls).length > 0 && !uploadState.modelFileUrl) {
-        // Create a preview with procedural geometry + textures
-        updatePreviewPlaceholder(false);
-        const container = document.getElementById('uploadPreviewContainer');
+  if (uploadState.previewViewer) {
+    uploadState.previewViewer.applyTextures(uploadState.textureUrls);
+  } else if (Object.keys(uploadState.textureUrls).length > 0 && !uploadState.modelFileUrl) {
+    // Create a preview with procedural geometry + textures
+    updatePreviewPlaceholder(false);
+    const container = document.getElementById('uploadPreviewContainer');
 
-        disposePreview();
+    disposePreview();
 
-        uploadState.previewViewer = createPBRViewer(container, {
-            modelUrl: null,
-            textures: uploadState.textureUrls,
-            modelData: { geometryType: 'sphere', color: '#6c5ce7', secondaryColor: '#00cec9' },
-            autoRotate: true,
-            showGrid: true,
-        });
-    }
+    uploadState.previewViewer = createPBRViewer(container, {
+      modelUrl: null,
+      modelFormat: null,
+      textures: uploadState.textureUrls,
+      modelData: { geometryType: 'sphere', color: '#6c5ce7', secondaryColor: '#00cec9' },
+      autoRotate: true,
+      showGrid: true,
+    });
+  }
 }
 
 function updatePreviewPlaceholder(show, message = '') {
-    const placeholder = document.getElementById('previewPlaceholder');
-    if (placeholder) {
-        placeholder.style.display = show ? '' : 'none';
-        if (message) {
-            placeholder.querySelector('.upload-modal__preview-placeholder-text').textContent = message;
-        }
+  const placeholder = document.getElementById('previewPlaceholder');
+  if (placeholder) {
+    placeholder.style.display = show ? '' : 'none';
+    if (message) {
+      placeholder.querySelector('.upload-modal__preview-placeholder-text').textContent = message;
     }
+  }
 }
 
 function disposePreview() {
-    if (uploadState.previewViewer) {
-        uploadState.previewViewer.dispose();
-        uploadState.previewViewer = null;
-    }
+  if (uploadState.previewViewer) {
+    uploadState.previewViewer.dispose();
+    uploadState.previewViewer = null;
+  }
 }
 
 function validateForm() {
-    const name = document.getElementById('uploadName').value.trim();
-    const author = document.getElementById('uploadAuthor').value.trim();
-    const hasFile = !!uploadState.modelFile || Object.keys(uploadState.textureFiles).length > 0;
+  const name = document.getElementById('uploadName').value.trim();
+  const author = document.getElementById('uploadAuthor').value.trim();
+  const hasFile = !!uploadState.modelFile || Object.keys(uploadState.textureFiles).length > 0;
 
-    const isValid = name.length > 0 && author.length > 0 && hasFile;
+  const isValid = name.length > 0 && author.length > 0 && hasFile;
 
-    const submitBtn = document.getElementById('uploadSubmit');
-    if (submitBtn) {
-        submitBtn.disabled = !isValid;
-    }
+  const submitBtn = document.getElementById('uploadSubmit');
+  if (submitBtn) {
+    submitBtn.disabled = !isValid;
+  }
 
-    return isValid;
+  return isValid;
 }
 
 function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
 function buildTextureLabel() {
-    const channels = Object.keys(uploadState.textureFiles);
-    if (channels.length === 0) return '无贴图';
+  const channels = Object.keys(uploadState.textureFiles);
+  if (channels.length === 0) return '无贴图';
 
-    const labels = channels.map(ch => {
-        const def = PBR_CHANNELS.find(p => p.id === ch);
-        return def ? def.label : ch;
-    });
+  const labels = channels.map(ch => {
+    const def = PBR_CHANNELS.find(p => p.id === ch);
+    return def ? def.label : ch;
+  });
 
-    return `PBR (${labels.join(', ')})`;
+  return `PBR (${labels.join(', ')})`;
 }

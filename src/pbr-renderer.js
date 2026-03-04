@@ -16,6 +16,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 // ============================================
 // Environment Map Generator
@@ -127,16 +129,17 @@ function generateStudioEnvironment(renderer) {
  * 
  * @param {HTMLElement} container - DOM element to render into
  * @param {Object} options - Configuration options
- * @param {string} options.modelUrl - URL of the GLTF/GLB model file
+ * @param {string} options.modelUrl - URL of the GLTF/GLB/FBX/OBJ model file
+ * @param {string} options.modelFormat - Format hint ('gltf','fbx','obj') for blob URLs
  * @param {Object} options.textures - PBR texture URLs { albedo, normal, metallic, roughness, ao, emissive, height }
  * @param {Object} options.modelData - Metadata for the model (fallback geometry colors etc)
  * @param {boolean} options.autoRotate - Enable auto-rotation (default true)
  * @param {boolean} options.showGrid - Show ground grid (default true)
- * @param {boolean} options.showStats - Show render stats (default false)
  */
 export function createPBRViewer(container, options = {}) {
     const {
         modelUrl = null,
+        modelFormat = null,
         textures = {},
         modelData = {},
         autoRotate = true,
@@ -382,65 +385,122 @@ export function createPBRViewer(container, options = {}) {
     }
 
     /**
-     * Load a GLTF/GLB model 
+     * Detect model format from URL
      */
-    function loadModel(url) {
+    function detectFormat(url) {
+        if (!url) return 'unknown';
+        // Handle blob URLs - check stored format hint
+        if (url.startsWith('blob:')) {
+            return _modelFormatHint || 'glb';
+        }
+        const ext = url.split('.').pop().split('?')[0].toLowerCase();
+        if (['glb', 'gltf'].includes(ext)) return 'gltf';
+        if (ext === 'fbx') return 'fbx';
+        if (ext === 'obj') return 'obj';
+        return 'gltf'; // default
+    }
+
+    // Format hint for blob URLs (set externally)
+    let _modelFormatHint = null;
+
+    /**
+     * Load a 3D model (GLTF/GLB, FBX, or OBJ)
+     */
+    function loadModel(url, formatHint) {
+        _modelFormatHint = formatHint || null;
+        const format = formatHint || detectFormat(url);
+
         return new Promise((resolve, reject) => {
-            const loader = new GLTFLoader();
-
-            // DRACO decoder for compressed models
-            const dracoLoader = new DRACOLoader();
-            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
-            loader.setDRACOLoader(dracoLoader);
-
-            loader.load(
-                url,
-                (gltf) => {
-                    const model = gltf.scene;
-
-                    // Enable shadows on all meshes
-                    model.traverse((child) => {
-                        if (child.isMesh) {
-                            child.castShadow = true;
-                            child.receiveShadow = true;
-                            // Ensure materials use env map
-                            if (child.material) {
+            // Common handler for loaded models
+            function handleLoadedModel(model, animations = []) {
+                // Enable shadows on all meshes
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        if (child.material) {
+                            // Ensure proper material settings
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(m => { m.envMapIntensity = 1.2; });
+                            } else {
                                 child.material.envMapIntensity = 1.2;
                             }
                         }
+                    }
+                });
+
+                // Handle animations
+                let mixer = null;
+                if (animations && animations.length > 0) {
+                    mixer = new THREE.AnimationMixer(model);
+                    animations.forEach((clip) => {
+                        mixer.clipAction(clip).play();
                     });
-
-                    // Handle animations
-                    let mixer = null;
-                    if (gltf.animations && gltf.animations.length > 0) {
-                        mixer = new THREE.AnimationMixer(model);
-                        gltf.animations.forEach((clip) => {
-                            mixer.clipAction(clip).play();
-                        });
-                    }
-
-                    // Add to scene
-                    if (loadedModel) {
-                        scene.remove(loadedModel);
-                    }
-                    scene.add(model);
-                    loadedModel = model;
-
-                    // Fit to view
-                    fitModelToView(model);
-
-                    resolve({ model, mixer, animations: gltf.animations || [] });
-                },
-                (progress) => {
-                    if (progress.total > 0) {
-                        const percent = Math.round((progress.loaded / progress.total) * 100);
-                        updateLoadingProgress(percent);
-                    }
-                },
-                (error) => {
-                    reject(error);
                 }
-            );
+
+                // Remove old model
+                if (loadedModel) {
+                    scene.remove(loadedModel);
+                }
+                scene.add(model);
+                loadedModel = model;
+
+                // Fit to view
+                fitModelToView(model);
+
+                resolve({ model, mixer, animations });
+            }
+
+            // Progress callback
+            function onProgress(progress) {
+                if (progress.total > 0) {
+                    const percent = Math.round((progress.loaded / progress.total) * 100);
+                    updateLoadingProgress(percent);
+                }
+            }
+
+            try {
+                if (format === 'fbx') {
+                    // ---- FBX Loader ----
+                    const fbxLoader = new FBXLoader();
+                    fbxLoader.load(
+                        url,
+                        (fbxScene) => {
+                            handleLoadedModel(fbxScene, fbxScene.animations || []);
+                        },
+                        onProgress,
+                        (error) => reject(error)
+                    );
+                } else if (format === 'obj') {
+                    // ---- OBJ Loader ----
+                    const objLoader = new OBJLoader();
+                    objLoader.load(
+                        url,
+                        (objGroup) => {
+                            handleLoadedModel(objGroup, []);
+                        },
+                        onProgress,
+                        (error) => reject(error)
+                    );
+                } else {
+                    // ---- GLTF/GLB Loader (default) ----
+                    const gltfLoader = new GLTFLoader();
+                    const dracoLoader = new DRACOLoader();
+                    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+                    gltfLoader.setDRACOLoader(dracoLoader);
+
+                    gltfLoader.load(
+                        url,
+                        (gltf) => {
+                            handleLoadedModel(gltf.scene, gltf.animations || []);
+                        },
+                        onProgress,
+                        (error) => reject(error)
+                    );
+                }
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
@@ -644,8 +704,8 @@ export function createPBRViewer(container, options = {}) {
     async function initialize() {
         try {
             if (modelUrl) {
-                // Load real model
-                const result = await loadModel(modelUrl);
+                // Load real model with format hint
+                const result = await loadModel(modelUrl, modelFormat);
                 animationMixer = result.mixer;
 
                 // Apply PBR textures if provided

@@ -583,6 +583,7 @@ async function openModal(modelId) {
 
         const viewer = createPBRViewer(preview, {
           modelUrl,
+          modelFormat: model.format || null,  // pass format hint for blob URLs
           textures: textureUrls,
           modelData: model,
           autoRotate: true,
