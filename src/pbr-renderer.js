@@ -720,18 +720,27 @@ export function createPBRViewer(container, options = {}) {
                     await applyPBRTextures(result.model, textures);
                 }
             } else {
-                // Fallback to procedural geometry
-                const fallback = createFallbackObject(modelData);
+                // No model URL provided
+                if (!isThumbnail) {
+                    // Fallback to procedural geometry for detail view if no model
+                    const fallback = createFallbackObject(modelData);
 
-                // Still apply textures if any were uploaded
-                if (textures && Object.values(textures).some(v => v)) {
-                    const wrapper = new THREE.Group();
-                    wrapper.add(fallback);
-                    scene.remove(fallback);
-                    scene.add(wrapper);
-                    loadedModel = wrapper;
-                    await applyPBRTextures(wrapper, textures);
-                    fitModelToView(wrapper);
+                    // Still apply textures if any were uploaded
+                    if (textures && Object.values(textures).some(v => v)) {
+                        const wrapper = new THREE.Group();
+                        wrapper.add(fallback);
+                        scene.remove(fallback);
+                        scene.add(wrapper);
+                        loadedModel = wrapper;
+                        await applyPBRTextures(wrapper, textures);
+                        fitModelToView(wrapper);
+                    }
+                } else {
+                    // For thumbnails, if no model URL, just show a placeholder error
+                    const errorNode = document.createElement('div');
+                    errorNode.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:rgba(255,255,255,0.2); font-size:10px; font-family:sans-serif; pointer-events:none; text-align:center;';
+                    errorNode.innerHTML = '<span>🚫</span><br/>NO MODEL FILE';
+                    container.appendChild(errorNode);
                 }
             }
         } catch (err) {
