@@ -472,49 +472,61 @@ async function openModal(modelId) {
   const preview = document.getElementById('modalPreview');
   const body = document.getElementById('modalBody');
 
+  // Defensive defaults for uploaded models
+  const format = (model.format || 'glb').toUpperCase();
+  const fileSize = model.fileSize || '-';
+  const authorInitial = model.authorInitial || (model.author ? model.author.charAt(0).toUpperCase() : '?');
+  const description = model.description || '社区上传的3D模型';
+  const vertices = model.vertices || '-';
+  const polygons = model.polygons || '-';
+  const textures = model.textures || '-';
+  const downloads = model.downloads || 0;
+  const license = model.license || 'CC0';
+  const date = model.date || '未知日期';
+
   // Render modal body
   body.innerHTML = `
-    <h2 class="modal__title">${model.name}</h2>
+    <h2 class="modal__title">${model.name || '未命名模型'}</h2>
     <div class="modal__author-row">
-      <span class="model-card__author-avatar" style="width:24px;height:24px;font-size:0.7rem">${model.authorInitial}</span>
-      <span>${model.author}</span>
+      <span class="model-card__author-avatar" style="width:24px;height:24px;font-size:0.7rem">${authorInitial}</span>
+      <span>${model.author || '匿名作者'}</span>
       <span>·</span>
-      <span>${model.date}</span>
+      <span>${date}</span>
       <span>·</span>
-      <span>${model.license}</span>
+      <span>${license}</span>
       ${model.isUploaded ? '<span style="color: var(--accent-green); font-weight: 600;">· 社区上传</span>' : ''}
       ${model.hasPBR ? '<span style="color: var(--accent-secondary); font-weight: 600;">· PBR 贴图</span>' : ''}
     </div>
-    <p class="modal__description">${model.description}</p>
+    <p class="modal__description">${description}</p>
     <div class="modal__info-grid">
       <div class="modal__info-item">
         <div class="modal__info-label">格式</div>
-        <div class="modal__info-value">${model.format.toUpperCase()}</div>
+        <div class="modal__info-value">${format}</div>
       </div>
       <div class="modal__info-item">
         <div class="modal__info-label">文件大小</div>
-        <div class="modal__info-value">${model.fileSize}</div>
+        <div class="modal__info-value">${fileSize}</div>
       </div>
       <div class="modal__info-item">
         <div class="modal__info-label">顶点数</div>
-        <div class="modal__info-value">${model.vertices}</div>
+        <div class="modal__info-value">${vertices}</div>
       </div>
       <div class="modal__info-item">
         <div class="modal__info-label">多边形</div>
-        <div class="modal__info-value">${model.polygons}</div>
+        <div class="modal__info-value">${polygons}</div>
       </div>
       <div class="modal__info-item">
         <div class="modal__info-label">贴图</div>
-        <div class="modal__info-value">${model.textures}</div>
+        <div class="modal__info-value">${textures}</div>
       </div>
       <div class="modal__info-item">
         <div class="modal__info-label">下载次数</div>
-        <div class="modal__info-value">${formatNumber(model.downloads)}</div>
+        <div class="modal__info-value">${formatNumber(downloads)}</div>
       </div>
     </div>
     <div class="modal__download-section">
       <button class="modal__download-btn" data-action="download" data-id="${model.id}">
-        ⬇️ 免费下载 ${model.format.toUpperCase()} · ${model.fileSize}
+        ⬇️ 免费下载 ${format} · ${fileSize}
       </button>
       <button class="modal__copy-link" data-action="copyLink" data-id="${model.id}">
         🔗 复制链接
