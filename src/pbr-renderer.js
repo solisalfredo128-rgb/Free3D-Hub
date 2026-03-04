@@ -722,10 +722,9 @@ export function createPBRViewer(container, options = {}) {
             } else {
                 // No model URL provided
                 if (!isThumbnail) {
-                    // Fallback to procedural geometry for detail view if no model
+                    // Fallback to procedural geometry for detail view only
                     const fallback = createFallbackObject(modelData);
 
-                    // Still apply textures if any were uploaded
                     if (textures && Object.values(textures).some(v => v)) {
                         const wrapper = new THREE.Group();
                         wrapper.add(fallback);
@@ -736,10 +735,11 @@ export function createPBRViewer(container, options = {}) {
                         fitModelToView(wrapper);
                     }
                 } else {
-                    // For thumbnails, if no model URL, just show a placeholder error
+                    // Strictly NO capsules for thumbnails
+                    console.warn(`[PBR Viewer] Missing modelUrl for thumbnail ${modelData.id}`);
                     const errorNode = document.createElement('div');
-                    errorNode.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:rgba(255,255,255,0.2); font-size:10px; font-family:sans-serif; pointer-events:none; text-align:center;';
-                    errorNode.innerHTML = '<span>🚫</span><br/>NO MODEL FILE';
+                    errorNode.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:rgba(255,255,255,0.1); font-size:10px; font-family:sans-serif; pointer-events:none; text-align:center;';
+                    errorNode.innerHTML = '<span>🚫</span><br/>PENDING';
                     container.appendChild(errorNode);
                 }
             }
