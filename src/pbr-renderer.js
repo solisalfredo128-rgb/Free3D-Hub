@@ -560,7 +560,7 @@ export function createPBRViewer(container, options = {}) {
     progressBarContainer.className = 'pbr-loading';
     progressBarContainer.innerHTML = `
     <div class="pbr-loading__spinner"></div>
-    <div class="pbr-loading__text">加载模型中...</div>
+    <div class="pbr-loading__text">Loading Model...</div>
     <div class="pbr-loading__bar">
       <div class="pbr-loading__fill" id="pbrLoadFill" style="width: 0%"></div>
     </div>
@@ -585,21 +585,21 @@ export function createPBRViewer(container, options = {}) {
     const toolbar = document.createElement('div');
     toolbar.className = 'pbr-toolbar';
     toolbar.innerHTML = `
-    <button class="pbr-toolbar__btn" data-action="wireframe" title="线框模式">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L14 5V11L8 15L2 11V5L8 1Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 1V15M2 5L14 11M14 5L2 11" stroke="currentColor" stroke-width="0.8" opacity="0.5"/></svg>
+    <button class="pbr-toolbar__btn" data-action="wireframe" title="Wireframe Mode">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 12h16"/><path d="M12 4v16"/></svg>
     </button>
-    <button class="pbr-toolbar__btn" data-action="normals" title="法线显示">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 2V8M8 8L12 5M8 8L4 5" stroke="currentColor" stroke-width="1"/></svg>
+    <button class="pbr-toolbar__btn" data-action="normals" title="Show Normals">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4v16"/><path d="M4 12h16"/></svg>
     </button>
-    <button class="pbr-toolbar__btn" data-action="autoRotate" title="自动旋转">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8A5 5 0 1 1 3 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13 8L15 6M13 8L11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <button class="pbr-toolbar__btn" data-action="autoRotate" title="Auto Rotate">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
     </button>
-    <button class="pbr-toolbar__btn" data-action="resetCamera" title="重置相机">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg>
+    <button class="pbr-toolbar__btn" data-action="resetCamera" title="Reset Camera">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
     </button>
-    <div class="pbr-toolbar__separator"></div>
-    <button class="pbr-toolbar__btn" data-action="envStudio" title="工作室灯光">S</button>
-    <button class="pbr-toolbar__btn" data-action="envDark" title="暗调灯光">D</button>
+    <div class="pbr-toolbar__divider"></div>
+    <button class="pbr-toolbar__btn" data-action="envStudio" title="Studio Lighting">S</button>
+    <button class="pbr-toolbar__btn" data-action="envDark" title="Dark Lighting">D</button>
   `;
     container.appendChild(toolbar);
 

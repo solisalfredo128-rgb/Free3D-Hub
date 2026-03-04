@@ -15,13 +15,13 @@ import { CATEGORIES, GEOMETRY_TYPES } from './models-data.js';
 
 // PBR texture channel definitions
 const PBR_CHANNELS = [
-  { id: 'albedo', label: 'Base Color', desc: '基础颜色/漫反射贴图', icon: '🎨', accept: 'image/*' },
-  { id: 'normal', label: 'Normal', desc: '法线贴图 (切线空间)', icon: '🔵', accept: 'image/*' },
-  { id: 'metallic', label: 'Metallic', desc: '金属度贴图', icon: '⚙️', accept: 'image/*' },
-  { id: 'roughness', label: 'Roughness', desc: '粗糙度贴图', icon: '🪨', accept: 'image/*' },
-  { id: 'ao', label: 'AO', desc: '环境光遮蔽贴图', icon: '🌑', accept: 'image/*' },
-  { id: 'emissive', label: 'Emissive', desc: '自发光贴图', icon: '✨', accept: 'image/*' },
-  { id: 'height', label: 'Height', desc: '高度/置换贴图', icon: '📐', accept: 'image/*' },
+  { id: 'albedo', label: 'Base Color', desc: 'Base Color / Diffuse Map', icon: '🎨', accept: 'image/*' },
+  { id: 'normal', label: 'Normal', desc: 'Normal Map (Tangent Space)', icon: '🔵', accept: 'image/*' },
+  { id: 'metallic', label: 'Metallic', desc: 'Metallic Map', icon: '⚙️', accept: 'image/*' },
+  { id: 'roughness', label: 'Roughness', desc: 'Roughness Map', icon: '🪨', accept: 'image/*' },
+  { id: 'ao', label: 'AO', desc: 'Ambient Occlusion Map', icon: '🌑', accept: 'image/*' },
+  { id: 'emissive', label: 'Emissive', desc: 'Emissive Map', icon: '✨', accept: 'image/*' },
+  { id: 'height', label: 'Height', desc: 'Height / Displacement Map', icon: '📐', accept: 'image/*' },
 ];
 
 // Supported 3D file formats
@@ -67,8 +67,8 @@ export function renderUploadModal() {
           <div class="upload-modal__header-left">
             <span class="upload-modal__icon">📤</span>
             <div>
-              <h2 class="upload-modal__title">上传3D模型</h2>
-              <p class="upload-modal__subtitle">支持 GLB / GLTF / FBX / OBJ 格式，可附带完整 PBR 贴图</p>
+              <h2 class="upload-modal__title">Upload 3D Model</h2>
+              <p class="upload-modal__subtitle">Supports GLB / GLTF / FBX / OBJ formats, complete PBR textures allowed</p>
             </div>
           </div>
           <button class="upload-modal__close" id="uploadClose">✕</button>
@@ -82,16 +82,16 @@ export function renderUploadModal() {
             <div class="upload-modal__3d-preview" id="uploadPreviewContainer">
               <div class="upload-modal__preview-placeholder" id="previewPlaceholder">
                 <div class="upload-modal__preview-placeholder-icon">🎮</div>
-                <div class="upload-modal__preview-placeholder-text">上传模型后预览</div>
-                <div class="upload-modal__preview-placeholder-hint">支持 GLB/GLTF/FBX/OBJ 实时 PBR 渲染</div>
+                <div class="upload-modal__preview-placeholder-text">Preview after upload</div>
+                <div class="upload-modal__preview-placeholder-hint">Supports GLB/GLTF/FBX/OBJ real-time PBR rendering</div>
               </div>
             </div>
             
             <!-- PBR Texture Grid -->
             <div class="upload-modal__pbr-section">
               <h3 class="upload-modal__section-title">
-                <span>🎨</span> PBR 贴图通道
-                <span class="upload-modal__section-badge">Sketchfab 风格</span>
+                <span>🎨</span> PBR Texture Channels
+                <span class="upload-modal__section-badge">Sketchfab Style</span>
               </h3>
               <div class="upload-modal__pbr-grid" id="pbrTextureGrid">
                 ${PBR_CHANNELS.map(ch => `
@@ -124,11 +124,11 @@ export function renderUploadModal() {
                   </svg>
                 </div>
                 <div class="upload-modal__dropzone-text">
-                  <strong>拖拽模型文件到此处</strong>
-                  <span>或 <label for="modelFileInput" class="upload-modal__file-link">浏览文件</label></span>
+                  <strong>Drag and drop model file here</strong>
+                  <span>Or <label for="modelFileInput" class="upload-modal__file-link">Browse files</label></span>
                 </div>
                 <div class="upload-modal__dropzone-formats">
-                  支持: GLB · GLTF · FBX · OBJ · BLEND
+                  Supports: GLB · GLTF · FBX · OBJ · BLEND
                 </div>
               </div>
               <div class="upload-modal__dropzone-file" id="dropzoneFile" style="display:none">
@@ -147,17 +147,17 @@ export function renderUploadModal() {
             <!-- Model Info Form -->
             <div class="upload-modal__form">
               <div class="upload-form__group">
-                <label class="upload-form__label" for="uploadName">模型名称 <span class="upload-form__required">*</span></label>
+                <label class="upload-form__label" for="uploadName">Model Name <span class="upload-form__required">*</span></label>
                 <input type="text" class="upload-form__input" id="uploadName" placeholder="e.g. Sci-Fi Robot Guardian" maxlength="100" />
               </div>
 
               <div class="upload-form__row">
                 <div class="upload-form__group">
-                  <label class="upload-form__label" for="uploadAuthor">作者名 <span class="upload-form__required">*</span></label>
-                  <input type="text" class="upload-form__input" id="uploadAuthor" placeholder="你的昵称" maxlength="50" />
+                  <label class="upload-form__label" for="uploadAuthor">Author Name <span class="upload-form__required">*</span></label>
+                  <input type="text" class="upload-form__input" id="uploadAuthor" placeholder="Your nickname" maxlength="50" />
                 </div>
                 <div class="upload-form__group">
-                  <label class="upload-form__label" for="uploadCategory">分类</label>
+                  <label class="upload-form__label" for="uploadCategory">Category</label>
                   <select class="upload-form__select" id="uploadCategory">
                     ${CATEGORIES.filter(c => c.id !== 'all').map(c =>
     `<option value="${c.id}">${c.icon} ${c.name}</option>`
@@ -168,34 +168,34 @@ export function renderUploadModal() {
 
               <div class="upload-form__row">
                 <div class="upload-form__group">
-                  <label class="upload-form__label" for="uploadLicense">许可协议</label>
+                  <label class="upload-form__label" for="uploadLicense">License</label>
                   <select class="upload-form__select" id="uploadLicense">
-                    <option value="CC0">CC0 (公共领域)</option>
-                    <option value="CC-BY">CC-BY (署名)</option>
-                    <option value="CC-BY-SA">CC-BY-SA (署名-相同方式共享)</option>
-                    <option value="CC-BY-NC">CC-BY-NC (署名-非商业)</option>
+                    <option value="CC0">CC0 (Public Domain)</option>
+                    <option value="CC-BY">CC-BY (Attribution)</option>
+                    <option value="CC-BY-SA">CC-BY-SA (Attribution-ShareAlike)</option>
+                    <option value="CC-BY-NC">CC-BY-NC (Attribution-NonCommercial)</option>
                     <option value="MIT">MIT</option>
                   </select>
                 </div>
                 <div class="upload-form__group">
-                  <label class="upload-form__label" for="uploadTags">标签</label>
-                  <input type="text" class="upload-form__input" id="uploadTags" placeholder="用逗号分隔: 科幻, PBR, 动画" />
+                  <label class="upload-form__label" for="uploadTags">Tags</label>
+                  <input type="text" class="upload-form__input" id="uploadTags" placeholder="Comma separated: sci-fi, PBR, animated" />
                 </div>
               </div>
 
               <div class="upload-form__group">
-                <label class="upload-form__label" for="uploadDesc">描述</label>
-                <textarea class="upload-form__textarea" id="uploadDesc" rows="4" placeholder="描述你的模型特点、用途、技术细节..." maxlength="500"></textarea>
+                <label class="upload-form__label" for="uploadDesc">Description</label>
+                <textarea class="upload-form__textarea" id="uploadDesc" rows="4" placeholder="Describe your model features, usage, technical details..." maxlength="500"></textarea>
               </div>
 
               <!-- Vertices/Polygons (optional) -->
               <div class="upload-form__row">
                 <div class="upload-form__group">
-                  <label class="upload-form__label" for="uploadVerts">顶点数</label>
+                  <label class="upload-form__label" for="uploadVerts">Vertices</label>
                   <input type="text" class="upload-form__input" id="uploadVerts" placeholder="e.g. 12,450" />
                 </div>
                 <div class="upload-form__group">
-                  <label class="upload-form__label" for="uploadPolys">多边形数</label>
+                  <label class="upload-form__label" for="uploadPolys">Polygons</label>
                   <input type="text" class="upload-form__input" id="uploadPolys" placeholder="e.g. 24,800" />
                 </div>
               </div>
@@ -203,9 +203,9 @@ export function renderUploadModal() {
 
             <!-- Submit -->
             <div class="upload-modal__actions">
-              <button class="upload-modal__btn upload-modal__btn--cancel" id="uploadCancel">取消</button>
+              <button class="upload-modal__btn upload-modal__btn--cancel" id="uploadCancel">Cancel</button>
               <button class="upload-modal__btn upload-modal__btn--submit" id="uploadSubmit" disabled>
-                <span>🚀</span> 发布模型
+                <span>🚀</span> Publish Model
               </button>
             </div>
           </div>
@@ -349,7 +349,7 @@ export function initUploadModal(onModelUploaded, showToast) {
     if (!validateForm()) return;
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="upload-spinner"></span> 保存中...';
+    submitBtn.innerHTML = '<span class="upload-spinner"></span> Saving...';
 
     try {
       const modelId = generateModelId();
@@ -388,7 +388,7 @@ export function initUploadModal(onModelUploaded, showToast) {
         vertices: document.getElementById('uploadVerts').value || '-',
         polygons: document.getElementById('uploadPolys').value || '-',
         textures: buildTextureLabel(),
-        description: document.getElementById('uploadDesc').value.trim() || '社区上传的3D模型',
+        description: document.getElementById('uploadDesc').value.trim() || 'Community uploaded 3D model',
         tags: document.getElementById('uploadTags').value
           .split(/[,，]/)
           .map(t => t.trim())
@@ -409,7 +409,7 @@ export function initUploadModal(onModelUploaded, showToast) {
 
       await saveModel(modelData, files);
 
-      showToast(`✅ 模型 "${modelData.name}" 发布成功！`);
+      showToast(`✅ Model "${modelData.name}" Published successfully!`);
       closeUploadModal();
 
       if (onModelUploaded) {
@@ -417,9 +417,9 @@ export function initUploadModal(onModelUploaded, showToast) {
       }
     } catch (err) {
       console.error('Upload failed:', err);
-      showToast('❌ 上传失败: ' + err.message);
+      showToast('❌ Upload failed: ' + err.message);
       submitBtn.disabled = false;
-      submitBtn.innerHTML = '<span>🚀</span> 发布模型';
+      submitBtn.innerHTML = '<span>🚀</span> Publish Model';
     }
   });
 
@@ -460,7 +460,7 @@ function handleModelFileSelect(file) {
   const formatInfo = MODEL_FORMATS[ext];
 
   if (!formatInfo) {
-    alert('不支持的文件格式。请使用 GLB, GLTF, FBX, OBJ, 或 BLEND 文件。');
+    alert('Unsupported file format. Please use GLB, GLTF, FBX, OBJ, or BLEND.');
     return;
   }
 
@@ -487,7 +487,7 @@ function handleModelFileSelect(file) {
     uploadState.modelFileUrl = URL.createObjectURL(file);
     updatePreview();
   } else {
-    updatePreviewPlaceholder(false, `${formatInfo.label} 格式暂不支持在线预览`);
+    updatePreviewPlaceholder(false, `${formatInfo.label} format is currently not supported for online preview`);
   }
 
   validateForm();
@@ -495,7 +495,7 @@ function handleModelFileSelect(file) {
 
 function handleTextureSelect(channel, file) {
   if (!file.type.startsWith('image/')) {
-    alert('请选择图片文件作为贴图');
+    alert('Please select an image file for texture');
     return;
   }
 
@@ -626,7 +626,7 @@ function formatFileSize(bytes) {
 
 function buildTextureLabel() {
   const channels = Object.keys(uploadState.textureFiles);
-  if (channels.length === 0) return '无贴图';
+  if (channels.length === 0) return 'No textures';
 
   const labels = channels.map(ch => {
     const def = PBR_CHANNELS.find(p => p.id === ch);

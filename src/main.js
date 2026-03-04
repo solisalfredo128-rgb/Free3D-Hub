@@ -1,6 +1,6 @@
 /**
  * Free3D Hub - Main Application
- * AI时代免费3D资源共享平台
+ * Free 3D Resource Sharing Platform
  */
 
 import './style.css';
@@ -17,7 +17,7 @@ console.log(
   'background:#a29bfe; padding: 4px 8px; border-radius: 0 4px 4px 0;  color: #fff;',
   'background:transparent'
 );
-console.log('欢迎使用 Free3D Hub - 为AI时代开发者打造的无门槛3D资源库。');
+console.log('Welcome to Free3D Hub - The zero-barrier 3D asset library for developers in the AI era.');
 
 
 // ============================================
@@ -39,7 +39,7 @@ const state = {
 // Utility
 // ============================================
 function formatNumber(num) {
-  if (num >= 10000) return (num / 10000).toFixed(1) + '万';
+  if (num >= 10000) return (num / 10000).toFixed(1) + 'k';
   if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
   return num.toString();
 }
@@ -129,7 +129,7 @@ function renderApp() {
             type="text" 
             class="navbar__search-input" 
             id="searchInput"
-            placeholder="搜索模型、作者、标签..."
+            placeholder="Search models, authors, tags..."
             autocomplete="off"
           />
         </div>
@@ -138,18 +138,18 @@ function renderApp() {
           <div class="navbar__stat">
             <span>📦</span>
             <span class="navbar__stat-value">${allModels.length}</span>
-            <span>模型</span>
+            <span>Models</span>
           </div>
           <div class="navbar__stat">
             <span>📥</span>
             <span class="navbar__stat-value">${formatNumber(allModels.reduce((s, m) => s + m.downloads, 0))}</span>
-            <span>总下载</span>
+            <span>Total Downloads</span>
           </div>
         </div>
 
         <div class="navbar__actions">
           <button class="navbar__btn navbar__btn--upload" id="uploadBtn">
-            <span>⬆️</span> 上传模型
+            <span>⬆️</span> Upload Models
           </button>
         </div>
       </div>
@@ -161,36 +161,36 @@ function renderApp() {
       <div class="hero__content">
         <div class="hero__badge animate-in">
           <span class="hero__badge-dot"></span>
-          AI时代 · 开源共享
+          AI Era · Open Source Sharing
         </div>
         <h1 class="hero__title animate-in animate-delay-1">
-          免费3D资源<br/>
-          <span class="hero__title-gradient">无偿共享平台</span>
+          Free 3D Resources<br/>
+          <span class="hero__title-gradient">Open Sharing Platform</span>
         </h1>
         <p class="hero__subtitle animate-in animate-delay-2">
-          为AI时代开发者打造的无门槛3D资源库。无需注册，即刻浏览、预览、下载。
-          GLB / FBX / OBJ 多格式支持，助力你的创意快速落地。
+          A zero-barrier 3D resource library built for developers in the AI era. No registration needed, instantly browse, preview, and download.
+          GLB / FBX / OBJ multi-format support, accelerating your creative workflows.
         </p>
         <div class="hero__cta-group animate-in animate-delay-3">
           <button class="hero__cta hero__cta--primary" id="browseBtn">
-            <span>🎮</span> 浏览资源
+            <span>🎮</span> Browse Resources
           </button>
           <button class="hero__cta hero__cta--secondary" id="heroUploadBtn">
-            <span>📤</span> 上传模型
+            <span>📤</span> Upload Models
           </button>
         </div>
         <div class="hero__metrics animate-in animate-delay-4">
           <div class="hero__metric">
             <div class="hero__metric-value" id="metricModels">0</div>
-            <div class="hero__metric-label">3D 模型</div>
+            <div class="hero__metric-label">3D Models</div>
           </div>
           <div class="hero__metric">
             <div class="hero__metric-value" id="metricDownloads">0</div>
-            <div class="hero__metric-label">总下载次数</div>
+            <div class="hero__metric-label">Total Downloads</div>
           </div>
           <div class="hero__metric">
             <div class="hero__metric-value" id="metricAuthors">0</div>
-            <div class="hero__metric-label">贡献作者</div>
+            <div class="hero__metric-label">Contributors</div>
           </div>
         </div>
       </div>
@@ -199,7 +199,7 @@ function renderApp() {
     <!-- Categories & Filters -->
     <section class="categories" id="categoriesSection">
       <div class="categories__header">
-        <h2 class="categories__title">🗂️ 浏览分类</h2>
+        <h2 class="categories__title">🗂️ Browse Categories</h2>
         <span class="categories__count" id="modelCount"></span>
       </div>
       <div class="categories__list" id="categoryList"></div>
@@ -215,27 +215,27 @@ function renderApp() {
 
     <!-- Features Section -->
     <section class="features">
-      <h2 class="features__title">✨ 为什么选择 Free3D Hub</h2>
+      <h2 class="features__title">✨ Why Choose Free3D Hub</h2>
       <div class="features__grid">
         <div class="feature-card animate-in">
           <div class="feature-card__icon feature-card__icon--purple">🚀</div>
-          <h3 class="feature-card__title">零门槛访问</h3>
-          <p class="feature-card__desc">无需注册、无需付费、无需等待。打开网页即可浏览和下载所有3D资源。</p>
+          <h3 class="feature-card__title">Zero-Barrier Access</h3>
+          <p class="feature-card__desc">No registration, no payment, no waiting. Just open the page and download any 3D resources.</p>
         </div>
         <div class="feature-card animate-in animate-delay-1">
           <div class="feature-card__icon feature-card__icon--cyan">🎨</div>
-          <h3 class="feature-card__title">PBR 渲染预览</h3>
-          <p class="feature-card__desc">Sketchfab 风格的在线 PBR 渲染器，支持 IBL 环境光照、法线、金属度、粗糙度等完整贴图通道。</p>
+          <h3 class="feature-card__title">PBR Render Preview</h3>
+          <p class="feature-card__desc">Sketchfab-style online PBR renderer, supporting IBL ambient lighting, normal, metallic, roughness, and other full texture channels.</p>
         </div>
         <div class="feature-card animate-in animate-delay-2">
           <div class="feature-card__icon feature-card__icon--pink">📤</div>
-          <h3 class="feature-card__title">自由上传</h3>
-          <p class="feature-card__desc">一键上传你的模型和 PBR 贴图，支持 GLB、FBX、OBJ 等主流格式，立即在线预览。</p>
+          <h3 class="feature-card__title">Free Uploading</h3>
+          <p class="feature-card__desc">One-click upload of your models and PBR textures. Supports GLB, FBX, OBJ, and other popular formats with instant online preview.</p>
         </div>
         <div class="feature-card animate-in animate-delay-3">
           <div class="feature-card__icon feature-card__icon--orange">🤖</div>
-          <h3 class="feature-card__title">AI开发友好</h3>
-          <p class="feature-card__desc">专为AI时代开发者优化。提供API接口（即将上线），方便程序化批量下载和集成。</p>
+          <h3 class="feature-card__title">AI-Development Friendly</h3>
+          <p class="feature-card__desc">Optimized for developers in the AI era. Providing API interfaces (coming soon) for convenient programmatic batch downloading and integration.</p>
         </div>
       </div>
     </section>
@@ -244,13 +244,13 @@ function renderApp() {
     <footer class="footer">
       <div class="footer__inner">
         <div class="footer__text">
-          © 2025 Free3D Hub · 所有资源遵循 CC0 / CC-BY 协议 · 为AI时代开发者而生
+          © 2025 Free3D Hub · All resources follow CC0 / CC-BY licenses · Built for developers in the AI era
         </div>
         <div class="footer__links">
-          <a href="#" class="footer__link">关于我们</a>
-          <a href="#" class="footer__link">使用条款</a>
-          <a href="#" class="footer__link">贡献指南</a>
-          <a href="#" class="footer__link">API 文档</a>
+          <a href="#" class="footer__link">About Us</a>
+          <a href="#" class="footer__link">Terms of Use</a>
+          <a href="#" class="footer__link">Contribution Guide</a>
+          <a href="#" class="footer__link">API Documentation</a>
           <a href="https://github.com" class="footer__link" target="_blank">GitHub</a>
         </div>
       </div>
@@ -272,7 +272,7 @@ function renderApp() {
     <!-- Toast -->
     <div class="toast" id="toast">
       <span class="toast__icon">✅</span>
-      <span id="toastMessage">操作成功</span>
+      <span id="toastMessage">Success</span>
     </div>
   `;
 
@@ -346,14 +346,14 @@ function renderModelGrid() {
   const grid = document.getElementById('modelGrid');
   const countEl = document.getElementById('modelCount');
 
-  countEl.textContent = `${models.length} 个模型`;
+  countEl.textContent = `${models.length} Models`;
 
   if (models.length === 0) {
     grid.innerHTML = `
       <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text-muted);">
         <div style="font-size: 3rem; margin-bottom: 16px;">🔍</div>
-        <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary);">未找到匹配的模型</div>
-        <div>试试其他搜索词或分类筛选</div>
+        <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary);">No models match your search</div>
+        <div>Try different keywords or filters</div>
       </div>
     `;
     return;
@@ -376,22 +376,22 @@ function renderModelGrid() {
         <div class="model-card__preview-overlay"></div>
         <span class="model-card__format model-card__format--${format}">${format.toUpperCase()}</span>
         <span class="model-card__license">${license}</span>
-        ${model.isUploaded ? '<span class="model-card__uploaded-badge">📤 社区上传</span>' : ''}
+        ${model.isUploaded ? '<span class="model-card__uploaded-badge">📤 Community Upload</span>' : ''}
         ${model.hasPBR ? '<span class="model-card__pbr-badge">🎨 PBR</span>' : ''}
         <div class="model-card__actions-overlay">
-          <button class="model-card__action-btn" title="全屏预览" data-action="fullscreen" data-id="${model.id}">🔍</button>
-          <button class="model-card__action-btn" title="分享" data-action="share" data-id="${model.id}">🔗</button>
+          <button class="model-card__action-btn" title="Fullscreen Preview" data-action="fullscreen" data-id="${model.id}">🔍</button>
+          <button class="model-card__action-btn" title="Share" data-action="share" data-id="${model.id}">🔗</button>
         </div>
       </div>
       <div class="model-card__body">
-        <div class="model-card__name">${model.name || '未命名模型'}</div>
+        <div class="model-card__name">${model.name || 'Untitled Model'}</div>
         <div class="model-card__author">
           <span class="model-card__author-avatar">${authorInitial}</span>
-          ${model.author || '匿名作者'}
+          ${model.author || 'Anonymous'}
         </div>
         <div class="model-card__tags">
           ${tags.slice(0, 3).map(t => `<span class="model-card__tag">${t}</span>`).join('')}
-          ${model.isUploaded && tags.length === 0 ? '<span class="model-card__tag">社区上传</span>' : ''}
+          ${model.isUploaded && tags.length === 0 ? '<span class="model-card__tag">Community Upload</span>' : ''}
         </div>
         <div class="model-card__meta">
           <div class="model-card__stats">
@@ -400,7 +400,7 @@ function renderModelGrid() {
             <span class="model-card__stat">👁️ ${formatNumber(views)}</span>
           </div>
           <button class="model-card__download-btn" data-action="download" data-id="${model.id}">
-            ⬇️ 下载
+            ⬇️ Download
             <span class="model-card__size">${fileSize}</span>
           </button>
         </div>
@@ -525,60 +525,60 @@ async function openModal(modelId) {
   const format = (model.format || 'glb').toUpperCase();
   const fileSize = model.fileSize || '-';
   const authorInitial = model.authorInitial || (model.author ? model.author.charAt(0).toUpperCase() : '?');
-  const description = model.description || '社区上传的3D模型';
+  const description = model.description || 'Community uploaded 3D Models';
   const vertices = model.vertices || '-';
   const polygons = model.polygons || '-';
   const textures = model.textures || '-';
   const downloads = model.downloads || 0;
   const license = model.license || 'CC0';
-  const date = model.date || '未知日期';
+  const date = model.date || 'Unknown date';
 
   // Render modal body
   body.innerHTML = `
-    <h2 class="modal__title">${model.name || '未命名模型'}</h2>
+    <h2 class="modal__title">${model.name || 'Untitled Model'}</h2>
     <div class="modal__author-row">
       <span class="model-card__author-avatar" style="width:24px;height:24px;font-size:0.7rem">${authorInitial}</span>
-      <span>${model.author || '匿名作者'}</span>
+      <span>${model.author || 'Anonymous'}</span>
       <span>·</span>
       <span>${date}</span>
       <span>·</span>
       <span>${license}</span>
-      ${model.isUploaded ? '<span style="color: var(--accent-green); font-weight: 600;">· 社区上传</span>' : ''}
-      ${model.hasPBR ? '<span style="color: var(--accent-secondary); font-weight: 600;">· PBR 贴图</span>' : ''}
+      ${model.isUploaded ? '<span style="color: var(--accent-green); font-weight: 600;">· Community Upload</span>' : ''}
+      ${model.hasPBR ? '<span style="color: var(--accent-secondary); font-weight: 600;">· PBR Texture</span>' : ''}
     </div>
     <p class="modal__description">${description}</p>
     <div class="modal__info-grid">
       <div class="modal__info-item">
-        <div class="modal__info-label">格式</div>
+        <div class="modal__info-label">Format</div>
         <div class="modal__info-value">${format}</div>
       </div>
       <div class="modal__info-item">
-        <div class="modal__info-label">文件大小</div>
+        <div class="modal__info-label">File Size</div>
         <div class="modal__info-value">${fileSize}</div>
       </div>
       <div class="modal__info-item">
-        <div class="modal__info-label">顶点数</div>
+        <div class="modal__info-label">Vertices</div>
         <div class="modal__info-value">${vertices}</div>
       </div>
       <div class="modal__info-item">
-        <div class="modal__info-label">多边形</div>
+        <div class="modal__info-label">Polygons</div>
         <div class="modal__info-value">${polygons}</div>
       </div>
       <div class="modal__info-item">
-        <div class="modal__info-label">贴图</div>
+        <div class="modal__info-label">Texture</div>
         <div class="modal__info-value">${textures}</div>
       </div>
       <div class="modal__info-item">
-        <div class="modal__info-label">下载次数</div>
+        <div class="modal__info-label">Downloads</div>
         <div class="modal__info-value">${formatNumber(downloads)}</div>
       </div>
     </div>
     <div class="modal__download-section">
       <button class="modal__download-btn" data-action="download" data-id="${model.id}">
-        ⬇️ 免费下载 ${format} · ${fileSize}
+        ⬇️ Free Download ${format} · ${fileSize}
       </button>
       <button class="modal__copy-link" data-action="copyLink" data-id="${model.id}">
-        🔗 复制链接
+        🔗 Copy link
       </button>
     </div>
   `;
@@ -860,7 +860,7 @@ async function handleDownload(modelId) {
   const model = allModels.find(m => m.id === modelId);
   if (!model) return;
 
-  showToast(`📥 正在下载: ${model.name} (${model.fileSize})`);
+  showToast(`📥 Downloading: ${model.name} (${model.fileSize})`);
 
   if (model.isUploaded) {
     // Download from IndexedDB
@@ -876,16 +876,16 @@ async function handleDownload(modelId) {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else {
-        showToast('⚠️ 该模型没有可下载的文件');
+        showToast('⚠️ No downloadable files for this model');
       }
     } catch (err) {
       console.error('Download failed:', err);
-      showToast('❌ 下载失败');
+      showToast('❌ Download failed');
     }
   } else {
     // Simulate download for demo models
     const blob = new Blob(
-      [`Free3D Hub - Download Placeholder\n\nModel: ${model.name}\nFormat: ${model.format.toUpperCase()}\nSize: ${model.fileSize}\nAuthor: ${model.author}\nLicense: ${model.license}\n\n此为演示文件。实际部署时，此处将返回真实的3D模型文件。`],
+      [`Free3D Hub - Download Placeholder\n\nModel: ${model.name}\nFormat: ${model.format.toUpperCase()}\nSize: ${model.fileSize}\nAuthor: ${model.author}\nLicense: ${model.license}\n\nThis is a demo file. Actual deployment will return the real 3D model.`],
       { type: 'text/plain' }
     );
     const url = URL.createObjectURL(blob);
@@ -902,9 +902,9 @@ async function handleDownload(modelId) {
 function handleShare(modelId) {
   const url = `${window.location.origin}?model=${modelId}`;
   navigator.clipboard?.writeText(url).then(() => {
-    showToast('🔗 链接已复制到剪贴板');
+    showToast('🔗 Link copied to clipboard');
   }).catch(() => {
-    showToast('🔗 分享链接: ' + url);
+    showToast('🔗 Share Link: ' + url);
   });
 }
 
@@ -935,7 +935,7 @@ async function init() {
       fileSize: m.fileSize || '-',
       isUploaded: true,
     }));
-    console.log(`[Free3D Hub] 从本地存储加载了 ${state.uploadedModels.length} 个用户上传的模型`);
+    console.log(`[Free3D Hub] Loaded ${state.uploadedModels.length} user uploaded models`);
   } catch (err) {
     console.warn('Could not load uploaded models:', err);
     state.uploadedModels = [];
