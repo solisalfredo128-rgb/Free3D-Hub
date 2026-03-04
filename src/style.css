@@ -759,6 +759,37 @@ img {
   backdrop-filter: blur(8px);
 }
 
+.model-card__uploaded-badge {
+  position: absolute;
+  bottom: var(--space-sm);
+  left: var(--space-sm);
+  z-index: 2;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #00b894;
+  background: rgba(0, 184, 148, 0.2);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 184, 148, 0.3);
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+.model-card__pbr-badge {
+  position: absolute;
+  bottom: var(--space-sm);
+  left: 90px;
+  z-index: 2;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--accent-secondary);
+  background: rgba(162, 155, 254, 0.2);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(162, 155, 254, 0.3);
+}
+
 .model-card__actions-overlay {
   position: absolute;
   bottom: var(--space-sm);

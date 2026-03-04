@@ -45,7 +45,16 @@ function formatNumber(num) {
 }
 
 function getAllCombinedModels() {
-  return [...MODELS, ...state.uploadedModels];
+  // Deduplicate by id to prevent duplicates from IndexedDB + in-memory state
+  const seen = new Set();
+  const combined = [];
+  for (const m of [...MODELS, ...state.uploadedModels]) {
+    if (!seen.has(m.id)) {
+      seen.add(m.id);
+      combined.push(m);
+    }
+  }
+  return combined;
 }
 
 function getFilteredModels() {
@@ -65,11 +74,11 @@ function getFilteredModels() {
   if (state.searchQuery.trim()) {
     const q = state.searchQuery.toLowerCase();
     models = models.filter(m =>
-      m.name.toLowerCase().includes(q) ||
-      m.author.toLowerCase().includes(q) ||
-      m.tags.some(t => t.toLowerCase().includes(q)) ||
-      m.description.toLowerCase().includes(q) ||
-      m.category.toLowerCase().includes(q)
+      (m.name || '').toLowerCase().includes(q) ||
+      (m.author || '').toLowerCase().includes(q) ||
+      (Array.isArray(m.tags) && m.tags.some(t => t.toLowerCase().includes(q))) ||
+      (m.description || '').toLowerCase().includes(q) ||
+      (m.category || '').toLowerCase().includes(q)
     );
   }
 
@@ -350,12 +359,23 @@ function renderModelGrid() {
     return;
   }
 
-  grid.innerHTML = models.map((model, index) => `
-    <div class="model-card animate-in" style="animation-delay: ${index * 0.05}s" data-model-id="${model.id}">
+  grid.innerHTML = models.map((model, index) => {
+    // Defensive defaults for uploaded models loaded from IndexedDB
+    const tags = Array.isArray(model.tags) ? model.tags : [];
+    const downloads = model.downloads || 0;
+    const likes = model.likes || 0;
+    const views = model.views || 0;
+    const authorInitial = model.authorInitial || (model.author ? model.author.charAt(0).toUpperCase() : '?');
+    const format = model.format || 'glb';
+    const license = model.license || 'CC0';
+    const fileSize = model.fileSize || '-';
+
+    return `
+    <div class="model-card animate-in" style="animation-delay: ${Math.min(index, 10) * 0.05}s" data-model-id="${model.id}">
       <div class="model-card__preview" id="preview-${model.id}">
         <div class="model-card__preview-overlay"></div>
-        <span class="model-card__format model-card__format--${model.format}">${model.format.toUpperCase()}</span>
-        <span class="model-card__license">${model.license}</span>
+        <span class="model-card__format model-card__format--${format}">${format.toUpperCase()}</span>
+        <span class="model-card__license">${license}</span>
         ${model.isUploaded ? '<span class="model-card__uploaded-badge">📤 社区上传</span>' : ''}
         ${model.hasPBR ? '<span class="model-card__pbr-badge">🎨 PBR</span>' : ''}
         <div class="model-card__actions-overlay">
@@ -364,28 +384,30 @@ function renderModelGrid() {
         </div>
       </div>
       <div class="model-card__body">
-        <div class="model-card__name">${model.name}</div>
+        <div class="model-card__name">${model.name || '未命名模型'}</div>
         <div class="model-card__author">
-          <span class="model-card__author-avatar">${model.authorInitial}</span>
-          ${model.author}
+          <span class="model-card__author-avatar">${authorInitial}</span>
+          ${model.author || '匿名作者'}
         </div>
         <div class="model-card__tags">
-          ${model.tags.slice(0, 3).map(t => `<span class="model-card__tag">${t}</span>`).join('')}
+          ${tags.slice(0, 3).map(t => `<span class="model-card__tag">${t}</span>`).join('')}
+          ${model.isUploaded && tags.length === 0 ? '<span class="model-card__tag">社区上传</span>' : ''}
         </div>
         <div class="model-card__meta">
           <div class="model-card__stats">
-            <span class="model-card__stat">📥 ${formatNumber(model.downloads)}</span>
-            <span class="model-card__stat">❤️ ${formatNumber(model.likes)}</span>
-            <span class="model-card__stat">👁️ ${formatNumber(model.views)}</span>
+            <span class="model-card__stat">📥 ${formatNumber(downloads)}</span>
+            <span class="model-card__stat">❤️ ${formatNumber(likes)}</span>
+            <span class="model-card__stat">👁️ ${formatNumber(views)}</span>
           </div>
           <button class="model-card__download-btn" data-action="download" data-id="${model.id}">
             ⬇️ 下载
-            <span class="model-card__size">${model.fileSize}</span>
+            <span class="model-card__size">${fileSize}</span>
           </button>
         </div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   // Create 3D previews with IntersectionObserver for lazy loading
   const observer = new IntersectionObserver((entries) => {
@@ -834,7 +856,24 @@ function handleCopyLink(modelId) {
 async function init() {
   // Load uploaded models from IndexedDB
   try {
-    state.uploadedModels = await getAllModels();
+    const storedModels = await getAllModels();
+    // Sanitize loaded models - ensure all required properties exist
+    state.uploadedModels = storedModels.map(m => ({
+      ...m,
+      tags: Array.isArray(m.tags) ? m.tags : [],
+      downloads: m.downloads || 0,
+      likes: m.likes || 0,
+      views: m.views || 0,
+      authorInitial: m.authorInitial || (m.author ? m.author.charAt(0).toUpperCase() : '?'),
+      geometryType: m.geometryType || 'sphere',
+      color: m.color || '#6c5ce7',
+      secondaryColor: m.secondaryColor || '#00cec9',
+      format: m.format || 'glb',
+      license: m.license || 'CC0',
+      fileSize: m.fileSize || '-',
+      isUploaded: true,
+    }));
+    console.log(`[Free3D Hub] 从本地存储加载了 ${state.uploadedModels.length} 个用户上传的模型`);
   } catch (err) {
     console.warn('Could not load uploaded models:', err);
     state.uploadedModels = [];
