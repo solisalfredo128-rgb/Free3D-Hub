@@ -33,6 +33,7 @@ const state = {
   heroScene: null,
   uploadedModels: [],
   uploadModalActions: null,
+  isAdmin: false,
 };
 
 // ============================================
@@ -381,6 +382,7 @@ function renderModelGrid() {
         <div class="model-card__actions-overlay">
           <button class="model-card__action-btn" title="Fullscreen Preview" data-action="fullscreen" data-id="${model.id}">🔍</button>
           <button class="model-card__action-btn" title="Share" data-action="share" data-id="${model.id}">🔗</button>
+          ${state.isAdmin && model.isUploaded ? `<button class="model-card__action-btn model-card__action-btn--delete" title="Delete Model (Admin Only)" data-action="delete" data-id="${model.id}">🗑️</button>` : ''}
         </div>
       </div>
       <div class="model-card__body">
@@ -725,6 +727,35 @@ function initEventListeners() {
     }
   });
 
+  // Secret Admin Access: Click logo 5 times within 5 seconds
+  let logoClicks = 0;
+  let logoTimer;
+  document.addEventListener('click', (e) => {
+    const logo = e.target.closest('.navbar__logo');
+    if (!logo) return;
+
+    e.preventDefault();
+    logoClicks++;
+    console.log(`Admin Trigger: ${logoClicks}/5`);
+    clearTimeout(logoTimer);
+    logoTimer = setTimeout(() => {
+      logoClicks = 0;
+      console.log('Admin Trigger Reset');
+    }, 5000);
+
+    if (logoClicks >= 5) {
+      logoClicks = 0;
+      const pwd = prompt('Enter Admin Password:');
+      if (pwd === 'admin888') {
+        state.isAdmin = !state.isAdmin;
+        showToast(state.isAdmin ? '🔓 Admin Mode Enabled' : '🔒 Admin Mode Disabled');
+        renderModelGrid();
+      } else if (pwd !== null) {
+        showToast('❌ Incorrect Password');
+      }
+    }
+  });
+
   // Search
   const searchInput = document.getElementById('searchInput');
   let searchTimeout;
@@ -777,10 +808,24 @@ function initEventListeners() {
       return;
     }
 
+    const deleteBtn = e.target.closest('[data-action="delete"]');
+    if (deleteBtn) {
+      e.stopPropagation();
+      handleDelete(deleteBtn.dataset.id);
+      return;
+    }
+
     const shareBtn = e.target.closest('[data-action="share"]');
     if (shareBtn) {
       e.stopPropagation();
       handleShare(shareBtn.dataset.id);
+      return;
+    }
+
+    const zoomBtn = e.target.closest('[data-action="fullscreen"]');
+    if (zoomBtn) {
+      e.stopPropagation();
+      openModal(zoomBtn.dataset.id);
       return;
     }
 
@@ -850,6 +895,28 @@ function initEventListeners() {
   document.querySelectorAll('.feature-card').forEach(card => {
     animObserver.observe(card);
   });
+}
+
+/**
+ * Handle model deletion (Admin)
+ */
+async function handleDelete(modelId) {
+  if (!confirm('Are you sure you want to delete this model? This action cannot be undone.')) return;
+
+  try {
+    const { deleteModel } = await import('./model-store.js');
+    await deleteModel(modelId);
+
+    // Update state
+    state.uploadedModels = state.uploadedModels.filter(m => m.id !== modelId);
+
+    showToast('🗑️ Model deleted successfully');
+    renderModelGrid();
+    renderCategories();
+  } catch (err) {
+    console.error('Delete failed:', err);
+    showToast('❌ Failed to delete model');
+  }
 }
 
 // ============================================

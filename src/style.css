@@ -674,7 +674,6 @@ img {
   overflow: hidden;
   transition: all var(--transition-normal);
   position: relative;
-  group: true;
 }
 
 .model-card:hover {
@@ -823,8 +822,12 @@ img {
 
 .model-card__action-btn:hover {
   background: var(--accent-primary);
-  border-color: var(--accent-primary);
   transform: scale(1.1);
+}
+
+.model-card__action-btn--delete:hover {
+  background: #ff4757;
+  color: white;
 }
 
 .model-card__body {
@@ -837,6 +840,7 @@ img {
   margin-bottom: 6px;
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
