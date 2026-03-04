@@ -603,11 +603,28 @@ function showToast(message) {
 function onModelUploaded(modelData) {
   state.uploadedModels.push(modelData);
 
+  // Switch to 'newest' sorting so the user can see their uploaded model immediately at the top
+  state.activeSort = 'newest';
+
+  // Also clear any active search or format filters that might hide the new model
+  state.activeCategory = 'all';
+  state.activeFormats = [];
+  state.searchQuery = '';
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+
+  // Update controls UI
+  renderSortControls();
+  renderFormatFilters();
+
   // Update categories count
   renderCategories();
 
   // Re-render grid to include the new model
   renderModelGrid();
+
+  // Scroll to the top of the grid
+  document.getElementById('categoriesSection').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ============================================
